@@ -1,0 +1,8 @@
+# Tnkrbook Data Processing Scripts
+
+A series of scripts useful for processing tinkrbook data
+
+## audio_scene.rb
+
+1. Concatenate all tnkrbook txt files from one tablet into one large txt files (name the large file with a label corresponding to the tablet (ex. tablet1.txt)
+2. run "./audio_scene.rb tablet1.txt > tablet1.csv" to get an output csv mapping of scene filename to audio file name
