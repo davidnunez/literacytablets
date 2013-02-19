@@ -18,7 +18,20 @@ MERGED_DATABASE_NAME = "merged_#{Time.now.to_i}.db"
 
 Dir.chdir DATA_RAW_PATH
 
-error_file = File.open("ERROR_LOG.txt", 'a')
+begin
+	processed_files = File.open("PROCESSED_FILE.txt").readlines.map {|l| l.chop! }
+rescue
+	processed_files = []
+end
+
+begin
+	error_files = File.open("ERROR_FILE.txt").readlines.map {|l| l.chop! }
+rescue
+	error_files = []
+end
+
+error_file = File.open("ERROR_FILE.txt", 'a')
+error_log_file = File.open("ERROR_LOG.txt", 'a')
 processed_file = File.open("PROCESSED_FILE.txt", 'a')
 
 puts "Syncing latest data..."
@@ -36,15 +49,17 @@ if rows.size == 0
 	SQL
 
 	merged_db.execute <<-SQL
-			CREATE TABLE master_id (serial_id text, device_id text, label text, version text);
+		CREATE TABLE master_id (serial_id text, device_id text, label text, version text);
 	SQL
 end
 
 
 # Process each .db file
 
-dir_contents = Dir["*.db"]
-dir_contents.first(100).each do |f| 
+dir_contents = Dir["*.db"]-processed_files
+dir_contents = dir_contents - error_files
+dir_contents.reject {|f| f.start_with? "merged"}
+dir_contents.first(1000).each do |f| 
 	begin
 		puts "Decrypting: " + f
 		system "~/data_processing/bin/dbdecrypt.py -p 'changeme' #{f}"
@@ -82,8 +97,12 @@ dir_contents.first(100).each do |f|
 		end
 		processed_file.puts(f)
 	rescue => detail
-		error_file.puts("ERROR: " + f + ': '+ detail)
-		puts ("ERROR--------------------------------!")
+		error_log_file.puts("ERROR: " + f + ': '+ detail)
+		puts ("ERROR--------------------------------")
+		puts ("\t" + f + ': ' + detail)
+		puts ("-------------------------------------")
+		error_file.puts(f)
+
 	ensure
 		db.close
 	end
