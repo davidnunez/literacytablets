@@ -2,3 +2,4 @@
 main.config
 sync.rb
 Gemfile.lock
+master_id.rb
