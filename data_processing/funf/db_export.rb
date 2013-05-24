@@ -23,11 +23,9 @@ data_coll = mongo_client.db("gsu")["data"]
 
 def make_hash_one_dimensional(input = {}, output = {}, options = {})
   input.each do |key, value|
-    key = options[:prefix].nil? ? "#{key}" :
-"#{options[:prefix]}#{options[:delimiter]||"_"}#{key}"
+    key = options[:prefix].nil? ? "#{key}" : "#{options[:prefix]}#{options[:delimiter]||"_"}#{key}"
     if value.is_a? Hash
-      make_hash_one_dimensional(value, output, :prefix => key, 
-:delimiter => "_")
+      make_hash_one_dimensional(value, output, :prefix => key, :delimiter => "_")
     else
       output[key]  = value
     end
@@ -41,36 +39,61 @@ begin
 	probes = data_coll.distinct('probe')
 
 	probes.each do |probe|
-		
+
 		if probe == "edu.mit.media.funf.probe.builtin.RunningApplicationsProbe" 
-			 next
+			next
 		end
 		puts "====================== #{probe}"
 
 		rows = data_coll.find('probe' => probe)
-		# keys = rows.first.keys
 
-	
-		# keys -= ["_id", "probe","data_id", "value"]
+		puts "Collecting Keys..."
 
-
-		# j = JSON.parse(rows.first['value']) 
-		# keys += j.keys
-
-		# puts keys.join(",")
-
-		keys = []
+		keys = ["serial_id", "timestamp"]
 		rows.each do |row|
+			value = JSON.parse(row['value'])
+			if value['RUNNING_TASKS'] != nil
+				task_index = 0
+				value['RUNNING_TASKS'].each do |task| 
+					task = make_hash_one_dimensional(task)
+					task.each do |key, v|
+						keys.concat([key]) 		
+					end
+					task_index += 1
+				end
+				value.delete('RUNNING_TASKS')		
+			end
+			keys = keys.concat(value.keys).uniq
 
-#		puts "--------------------"
 
+		end
+		keys.delete("TIMESTAMP")
+		keys.delete("PROBE")
+
+		keys.map! {|key| key.downcase }
+		puts keys.join(",")
+		rows = data_coll.find('probe' => probe)
+
+		rows.each do |row|
 			newHash = Hash.new
-
 
 			newHash['value'] = JSON.parse(row['value'])
 			newHash['timestamp'] = row['timestamp']
 			newHash['serial_id'] = row['serial_id'] 
 
+			if newHash['value']['RUNNING_TASKS'] != nil
+				task_index = 0
+				newHash['value']['RUNNING_TASKS'].each do |task| 
+					task = make_hash_one_dimensional(task)
+					task.each do |key, value|
+						newHash[key + "_" + task_index.to_s] = value
+					end
+					task_index += 1
+				end
+				newHash['value'].delete('RUNNING_TASKS')
+			end
+
+			
 			newHash = make_hash_one_dimensional(newHash)
 			
 			if newHash["timestamp"].to_i == newHash["value_TIMESTAMP"].to_i*1000
@@ -82,139 +105,19 @@ begin
 				    newHash[key[6, key.length].downcase] = newHash.delete(key)
 				end
 			end
-			newHash.delete('probe')			
+			newHash.delete('probe')
 
-			# puts (row)
-			# n = make_hash_one_dimensional(row[0])
-			# n = n.delete('_id')
-			# n = n.delete('probe')
-			# n = n.delete('value')
-			# n = n.delete('data_id')
-
-			newHash.each do |key, value| 
-	#			puts "\t #{key} : #{value}"
-			end
-
-			puts newHash.values.join(",")
-
-			#puts j.to_a
-			keys = newHash.keys
+			newValues = []
+			keys.each do |key|
+				newValues.concat([newHash[key]])
+			end			
+			# newHash.each do |key, value| 
+			# 	puts "\t #{key} : #{value}"
+			# end
+			puts newValues.join(",")
 		end
-			puts keys.join(",")
+		#puts keys.join(",")
 	end
 
 end	
-
-
-
-# 	 	db = SQLite3::Database.new( f )
-# 		if files_coll.find('filename' => f).to_a.length != 0
-# 			next
-# 		end
-
-# 		puts "Processing: " + f
-# 		system "~/data_processing/bin/dbdecrypt.py -p 'changeme' #{f}"
-
-# 	  	file_info = db.get_first_row( "select * from file_info" )
-# 	  	file_id, database_name, device_id, uuid, created = file_info
-
-
-
-# 	  	# Example Filename
-# 	  	# 1362428241-00000174_0a7442444300a557_9385a79e-2d38-4917-8b67-8e600d1ba226_1358991911_mainPipeline.db
-
-# 		filename_metadata = f.split('_')
-# 		if filename_metadata.length != 5 then
-# 			raise "Invalid filename"
-# 		end
-
-# 		upload_date = filename_metadata[0].split('-')[0] 
-# 		ordinal_value = filename_metadata[0].split('-')[1]
-# 		serial_id = filename_metadata[1]
-# 		device_id = filename_metadata[2]
-# 		collected_date = filename_metadata[3]
-
-
-# 			if (upload_date.to_s.length == 10) 
-# 				upload_date = upload_date.to_i * 1000
-# 			end
-# 			if (collected_date.to_s.length == 10) 
-# 				collected_date = collected_date.to_i * 1000
-# 			end
-
-# 		puts "Mapping: #{device_id} to #{serial_id}"
-
-# 		if (devices_coll.find("device_id" => device_id).to_a.length == 0) 
-# 			doc = {"serial_id" => serial_id, "device_id" => device_id}
-# 			devices_coll.insert(doc)
-# 		end
-
-# 		puts "Storing File Metadata"
-
-# 		doc = {"filename" => f,
-# 				"upload_date" => upload_date, 
-# 				"ordinal_value" => ordinal_value, 
-# 				"serial_id" => serial_id, 
-# 				"collected_date" => collected_date,
-# 				"processed" => false}
-# 		files_coll.insert(doc);
-
-
-
-# 		puts "Storing Data"
-# 		rows = db.execute("select * from data") 
-# 		rows.each do |row|
-# 			data_id, probe, timestamp, value = row
-
-# 			if (timestamp.to_s.length == 10) 
-# 				timestamp *= 1000
-# 			end
-
-# 			merged_id = uuid + '-' + data_id.to_s
-# 			doc = {"data_id" => merged_id,
-# 					"serial_id" => serial_id,
-# 					"probe" => probe,
-# 					"timestamp" => timestamp,
-# 					"value" => value }
-# 			begin 
-# #				puts doc["value"]
-# 				## ANECDOTAL FIXES
-
-# 				if doc['probe'] == "LauncherApp" 
-# 					newValue = '{"app" : "' + doc["value"] + '"}'
-# 					doc["value"] = newValue
-# 				end
-# 				if doc['probe'] == "FileMoverService" 
-# 					doc["value"] += "}"
-# 				end
-
-# 				j = JSON.parse(doc['value'])
-# 				data_coll.insert(doc)
-			
-# 			rescue => detail
-# 				error_msg = "ERROR--------------------------------\n" +
-# 					"\t" + doc['probe'] + ': ' + detail + "\n" +
-# 					"\t" + doc.inspect + "\n" +
-# 					"-------------------------------------"
-# 				puts error_msg
-# 				#error_file.puts error_msg
-# 			end
-
-
-# 		end
-# 		files_coll.update({"filename" => f}, {"$set" => {"processed" => true}})
-
-# 		# processed_file.puts(f)
-# 	rescue => detail
-# 		#error_log_file.puts("ERROR: " + f + ': '+ detail)
-# 		error_msg = "ERROR--------------------------------\n" +
-# 			"\t" + f + ': ' + detail + "\n" +
-# 			"-------------------------------------"
-# 		puts error_msg
-# 		#error_file.puts error_msg
-# 	ensure
-# 		db.close
-# 	end
-
-# end
 
