@@ -98,11 +98,14 @@ dir_contents.first(1000).each do |f|
 
 		puts "Storing File Metadata"
 
+
+
 		doc = {"filename" => f,
 				"upload_date" => upload_date, 
 				"ordinal_value" => ordinal_value, 
 				"serial_id" => serial_id, 
 				"collected_date" => collected_date,
+				"size" => File.new(f).stat.size,
 				"processed" => false}
 		files_coll.insert(doc);
 
