@@ -59,7 +59,7 @@ end
 dir_contents = Dir["*.db"]-processed_files
 dir_contents = dir_contents - error_files
 dir_contents.reject {|f| f.start_with? "merged"}
-dir_contents.first(1000).each do |f| 
+dir_contents.first(10000).each do |f| 
 	begin
 		puts "Decrypting: " + f
 		system "~/data_processing/bin/dbdecrypt.py -p 'changeme' #{f}"
