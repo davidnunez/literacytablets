@@ -25,6 +25,28 @@ files_coll.remove
 devices_coll.remove
 data_coll.remove
 
+class BSON::OrderedHash
+  def to_h
+    inject({}) { |acc, element| k,v = element; acc[k] = (if v.class == BSON::OrderedHash then v.to_h else v end); acc }
+  end
+
+  def to_json
+    to_h.to_json
+  end
+end
+
+
+def make_hash_one_dimensional(input = {}, output = {}, options = {})
+  input.each do |key, value|
+    key = options[:prefix].nil? ? "#{key}" : "#{options[:prefix]}#{options[:delimiter]||"_"}#{key}"
+    if value.is_a? Hash
+      make_hash_one_dimensional(value, output, :prefix => key, :delimiter => "_")
+    else
+      output[key]  = value
+    end
+  end
+  output
+end
 
 dir_contents = Dir["*.db"]
 
@@ -112,6 +134,27 @@ dir_contents.first(1000).each do |f|
 				if doc['probe'] == "FileMoverService" 
 					doc["value"] += "}"
 				end
+				if doc['probe'] == "edu.mit.media.funf.probe.builtin.RunningApplicationsProbe"
+
+ 					value = JSON.parse(doc['value'])
+ 					if value['RUNNING_TASKS'] != nil
+ 						task_index = 0
+ 						value['RUNNING_TASKS'].each do |task| 
+ 							task = make_hash_one_dimensional(task)
+ 							d = {"data_id" => merged_id,
+								"serial_id" => serial_id,
+								"probe" => probe,
+								"timestamp" => timestamp,
+								"stack_id" => task_index};
+							d = d.merge({"value" => task.to_json})
+							data_coll.insert(d)
+							task_index += 1
+ 						end
+ 						value.delete('RUNNING_TASKS')		
+					end
+					next
+				end
+
 
 				j = JSON.parse(doc['value'])
 				data_coll.insert(doc)

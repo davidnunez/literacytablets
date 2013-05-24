@@ -41,7 +41,7 @@ begin
 	probes.each do |probe|
 
 		if probe == "edu.mit.media.funf.probe.builtin.RunningApplicationsProbe" 
-			next
+			#next
 		end
 		puts "====================== #{probe}"
 
@@ -51,24 +51,31 @@ begin
 
 		keys = ["serial_id", "timestamp"]
 		rows.each do |row|
-			value = JSON.parse(row['value'])
-			if value['RUNNING_TASKS'] != nil
-				task_index = 0
-				value['RUNNING_TASKS'].each do |task| 
-					task = make_hash_one_dimensional(task)
-					task.each do |key, v|
-						keys.concat([key]) 		
-					end
-					task_index += 1
-				end
-				value.delete('RUNNING_TASKS')		
+			if row['value'] != nil 
+				#puts row['value']
+				value = JSON.parse(row['value'])
+				# if value['RUNNING_TASKS'] != nil
+				# 	task_index = 0
+				# 	value['RUNNING_TASKS'].each do |task| 
+				# 		task = make_hash_one_dimensional(task)
+				# 		task.each do |key, v|
+				# 			keys.concat([key]) 		
+				# 		end
+				# 		task_index += 1
+				# 	end
+				# 	value.delete('RUNNING_TASKS')		
+				# end
+				keys = keys.concat(value.keys).uniq
 			end
-			keys = keys.concat(value.keys).uniq
-
 
 		end
 		keys.delete("TIMESTAMP")
 		keys.delete("PROBE")
+		if probe == "edu.mit.media.funf.probe.builtin.RunningApplicationsProbe"
+
+			keys = keys.concat(['stack_id']).uniq
+		end
+
 
 		keys.map! {|key| key.downcase }
 		puts keys.join(",")
@@ -81,17 +88,20 @@ begin
 			newHash['timestamp'] = row['timestamp']
 			newHash['serial_id'] = row['serial_id'] 
 
-			if newHash['value']['RUNNING_TASKS'] != nil
-				task_index = 0
-				newHash['value']['RUNNING_TASKS'].each do |task| 
-					task = make_hash_one_dimensional(task)
-					task.each do |key, value|
-						newHash[key + "_" + task_index.to_s] = value
-					end
-					task_index += 1
-				end
-				newHash['value'].delete('RUNNING_TASKS')
+			if row['probe'] == "edu.mit.media.funf.probe.builtin.RunningApplicationsProbe"
+				newHash['stack_id'] = row['stack_id']
 			end
+			# if newHash['value']['RUNNING_TASKS'] != nil
+			# 	task_index = 0
+			# 	newHash['value']['RUNNING_TASKS'].each do |task| 
+			# 		task = make_hash_one_dimensional(task)
+			# 		task.each do |key, value|
+			# 			newHash[key + "_" + task_index.to_s] = value
+			# 		end
+			# 		task_index += 1
+			# 	end
+			# 	newHash['value'].delete('RUNNING_TASKS')
+			# end
 
 			
 			newHash = make_hash_one_dimensional(newHash)
