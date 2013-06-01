@@ -21,6 +21,13 @@ files_coll = mongo_client.db("gsu")["files"]
 devices_coll = mongo_client.db("gsu")["devices"]
 data_coll = mongo_client.db("gsu")["data"]
 
+
+RUN_TIME = Time.now.to_i
+
+
+error_file = File.open("#{RUN_TIME}_ERROR_FILE.txt", 'a')
+error_log_file = File.open("#{RUN_TIME}_ERROR_LOG.txt", 'a')
+
 files_coll.remove
 devices_coll.remove
 data_coll.remove
@@ -169,6 +176,11 @@ dir_contents.each do |f|
 					"-------------------------------------"
 				puts error_msg
 				#error_file.puts error_msg
+			
+				error_log_file.puts(error_msg)
+				error_file.puts(f)
+
+
 			end
 
 
@@ -182,6 +194,9 @@ dir_contents.each do |f|
 			"\t" + f + ': ' + detail + "\n" +
 			"-------------------------------------"
 		puts error_msg
+		error_log_file.puts(error_msg)
+		error_file.puts(f)
+
 		#error_file.puts error_msg
 	ensure
 		db.close
