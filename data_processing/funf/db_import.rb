@@ -50,7 +50,7 @@ end
 
 dir_contents = Dir["*.db"]
 
-dir_contents.first(1000).each do |f| 
+dir_contents.each do |f| 
 	begin
 
 			
