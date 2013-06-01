@@ -61,7 +61,6 @@ dir_contents.each do |f|
 	begin
 
 			
-	 	db = SQLite3::Database.new( f )
 		if files_coll.find('filename' => f).to_a.length != 0
 			next
 		end
@@ -69,8 +68,6 @@ dir_contents.each do |f|
 		puts "Processing: " + f
 		system "~/data_processing/bin/dbdecrypt.py -p 'changeme' #{f}"
 
-	  	file_info = db.get_first_row( "select * from file_info" )
-	  	file_id, database_name, device_id, uuid, created = file_info
 
 
 
@@ -119,6 +116,10 @@ dir_contents.each do |f|
 
 
 		puts "Storing Data"
+	 	db = SQLite3::Database.new( f )
+	  	file_info = db.get_first_row( "select * from file_info" )
+	  	file_id, database_name, device_id, uuid, created = file_info
+
 		rows = db.execute("select * from data") 
 		rows.each do |row|
 			data_id, probe, timestamp, value = row
@@ -199,7 +200,9 @@ dir_contents.each do |f|
 
 		#error_file.puts error_msg
 	ensure
-		db.close
+		if (db != nil)
+			db.close
+		end
 	end
 
 end
