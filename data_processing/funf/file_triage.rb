@@ -1,5 +1,4 @@
-#!/usr/bin/ruby
-
+#! /usr/bin/env ruby
 
 ##############################################################################
 ### file_triage.rb by [David Nunez](www.davidnunez.com), 2013

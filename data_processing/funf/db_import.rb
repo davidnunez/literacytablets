@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#! /usr/bin/env ruby
 
 ##############################################################################
 ### db_import.rb by [David Nunez](www.davidnunez.com), 2013

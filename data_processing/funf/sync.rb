@@ -1,10 +1,10 @@
+#! /usr/bin/env ruby
+
 ##############################################################################
 ### master_id.rb by [David Nunez](www.davidnunez.com), 2013
 ###
 ### Copyright 2013, David Nunez, MIT License
 ##############################################################################
-
-#!/usr/bin/ruby
 
 require "rubygems"
 require "bundler/setup"
