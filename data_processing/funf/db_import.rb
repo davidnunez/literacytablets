@@ -16,10 +16,10 @@ require 'mongo'
 require 'json'
 include Mongo
 
-mongo_client = MongoClient.new("localhost", 27017)
-files_coll = mongo_client.db("gsu")["files"]
-devices_coll = mongo_client.db("gsu")["devices"]
-data_coll = mongo_client.db("gsu")["data"]
+mongo_client = MongoClient.new("worldliteracydata.media.mit.edu", 27017)
+files_coll = mongo_client.db("gsu_bak")["files"]
+devices_coll = mongo_client.db("gsu_bak")["devices"]
+data_coll = mongo_client.db("gsu_bak")["data"]
 
 
 RUN_TIME = Time.now.to_i
@@ -28,9 +28,9 @@ RUN_TIME = Time.now.to_i
 error_file = File.open("#{RUN_TIME}_ERROR_FILE.txt", 'a')
 error_log_file = File.open("#{RUN_TIME}_ERROR_LOG.txt", 'a')
 
-files_coll.remove
-devices_coll.remove
-data_coll.remove
+# files_coll.remove
+# devices_coll.remove
+# data_coll.remove
 
 class BSON::OrderedHash
   def to_h
@@ -113,7 +113,7 @@ dir_contents.each do |f|
 				"processed" => false}
 		files_coll.insert(doc);
 
-
+		next
 
 		puts "Storing Data"
 	 	db = SQLite3::Database.new( f )
