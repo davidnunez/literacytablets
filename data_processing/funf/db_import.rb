@@ -15,16 +15,25 @@ require 'parseconfig'
 require 'mongo'
 require 'json'
 require 'mongoid'
-require '../data_file.rb'
-
+require './data_file.rb'
+require 'parseconfig'
 include Mongo
+Mongoid.load!("mongoid.yml", :development)
 
-Mongoid.load!("../mongoid.yml", :development)
+
+config = ParseConfig.new('main.config')
+DATA_RAW_PATH = config['DATA_RAW_PATH']
+
+
+
+Dir.chdir DATA_RAW_PATH
+
+
 
 
 mongo_client = MongoClient.new("worldliteracydata.media.mit.edu", 27017)
-devices_coll = mongo_client.db("gsu_test2")["devices"]
-data_coll = mongo_client.db("gsu_test2")["data"]
+devices_coll = mongo_client.db("gsu_test3")["devices"]
+data_coll = mongo_client.db("gsu_test3")["data"]
 
 
 RUN_TIME = Time.now.to_i
@@ -33,9 +42,9 @@ RUN_TIME = Time.now.to_i
 error_file = File.open("#{RUN_TIME}_ERROR_FILE.txt", 'a')
 error_log_file = File.open("#{RUN_TIME}_ERROR_LOG.txt", 'a')
 
-devices_coll.remove
-data_coll.remove
-DataFile.delete_all
+# devices_coll.remove
+# data_coll.remove
+# DataFile.delete_all
 
 class BSON::OrderedHash
   def to_h
@@ -61,11 +70,12 @@ def make_hash_one_dimensional(input = {}, output = {}, options = {})
 end
 
 dir_contents = Dir["*.db"]
-puts dir_contents
+
 dir_contents.each do |f| 
 	begin
 
 		if DataFile.where(filename: f).exists?
+			puts "skipping #{f}"
 			next
 		end
 
