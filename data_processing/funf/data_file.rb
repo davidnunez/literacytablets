@@ -1,3 +1,6 @@
+require './device.rb'
+
+
 class DataFile
   include Mongoid::Document
 
@@ -8,6 +11,8 @@ class DataFile
   field :processed, type: Boolean
   field :collected_date, type: Time
   field :upload_date, type: Time
+
+  belongs_to :device
 
 	def self.time_at_ms(ms)
 		Time.at(ms / 1000, (ms % 1000) * 1000)

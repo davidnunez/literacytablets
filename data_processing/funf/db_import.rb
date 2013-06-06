@@ -16,6 +16,8 @@ require 'mongo'
 require 'json'
 require 'mongoid'
 require './data_file.rb'
+require './device.rb'
+
 require 'parseconfig'
 include Mongo
 Mongoid.load!("mongoid.yml", :development)
@@ -32,7 +34,6 @@ Dir.chdir DATA_RAW_PATH
 
 
 mongo_client = MongoClient.new("worldliteracydata.media.mit.edu", 27017)
-devices_coll = mongo_client.db("gsu_test3")["devices"]
 data_coll = mongo_client.db("gsu_test3")["data"]
 
 
@@ -42,8 +43,8 @@ RUN_TIME = Time.now.to_i
 error_file = File.open("#{RUN_TIME}_ERROR_FILE.txt", 'a')
 error_log_file = File.open("#{RUN_TIME}_ERROR_LOG.txt", 'a')
 
-# devices_coll.remove
 # data_coll.remove
+# Device.delete_all
 # DataFile.delete_all
 
 class BSON::OrderedHash
@@ -109,23 +110,21 @@ dir_contents.each do |f|
 
 		puts "Mapping: #{device_id} to #{serial_id}"
 
-		if (devices_coll.find("device_id" => device_id).to_a.length == 0) 
-			doc = {"serial_id" => serial_id, "device_id" => device_id}
-			devices_coll.insert(doc)
-		end
+		
+		device = Device.first_or_create!(device_id: device_id, serial_id: serial_id)
+
 
 		puts "Storing File Metadata"
 
 
-		DataFile.create!(
+		df = DataFile.create!(
 			filename: f,
 			ordinal_value: ordinal_value,
-			serial_id: serial_id,
 			size: File.new(f).stat.size,
 			processed: false,
 			collected_date: DataFile.time_at_ms(collected_date),
-			upload_date: DataFile.time_at_ms(upload_date)
-
+			upload_date: DataFile.time_at_ms(upload_date),
+			device: device
 		)
 
 		next
