@@ -14,12 +14,17 @@ require 'sqlite3'
 require 'parseconfig'
 require 'mongo'
 require 'json'
+require 'mongoid'
+require '../data_file.rb'
+
 include Mongo
 
+Mongoid.load!("../mongoid.yml", :development)
+
+
 mongo_client = MongoClient.new("worldliteracydata.media.mit.edu", 27017)
-files_coll = mongo_client.db("gsu_bak")["files"]
-devices_coll = mongo_client.db("gsu_bak")["devices"]
-data_coll = mongo_client.db("gsu_bak")["data"]
+devices_coll = mongo_client.db("gsu_test2")["devices"]
+data_coll = mongo_client.db("gsu_test2")["data"]
 
 
 RUN_TIME = Time.now.to_i
@@ -28,9 +33,9 @@ RUN_TIME = Time.now.to_i
 error_file = File.open("#{RUN_TIME}_ERROR_FILE.txt", 'a')
 error_log_file = File.open("#{RUN_TIME}_ERROR_LOG.txt", 'a')
 
-# files_coll.remove
-# devices_coll.remove
-# data_coll.remove
+devices_coll.remove
+data_coll.remove
+DataFile.delete_all
 
 class BSON::OrderedHash
   def to_h
@@ -56,12 +61,11 @@ def make_hash_one_dimensional(input = {}, output = {}, options = {})
 end
 
 dir_contents = Dir["*.db"]
-
+puts dir_contents
 dir_contents.each do |f| 
 	begin
 
-			
-		if files_coll.find('filename' => f).to_a.length != 0
+		if DataFile.where(filename: f).exists?
 			next
 		end
 
@@ -103,15 +107,16 @@ dir_contents.each do |f|
 		puts "Storing File Metadata"
 
 
+		DataFile.create!(
+			filename: f,
+			ordinal_value: ordinal_value,
+			serial_id: serial_id,
+			size: File.new(f).stat.size,
+			processed: false,
+			collected_date: DataFile.time_at_ms(collected_date),
+			upload_date: DataFile.time_at_ms(upload_date)
 
-		doc = {"filename" => f,
-				"upload_date" => upload_date, 
-				"ordinal_value" => ordinal_value, 
-				"serial_id" => serial_id, 
-				"collected_date" => collected_date,
-				"size" => File.new(f).stat.size,
-				"processed" => false}
-		files_coll.insert(doc);
+		)
 
 		next
 
@@ -186,13 +191,13 @@ dir_contents.each do |f|
 
 
 		end
-		files_coll.update({"filename" => f}, {"$set" => {"processed" => true}})
 
+		File.where(filename: f).update(processed: true)
 		# processed_file.puts(f)
 	rescue => detail
 		#error_log_file.puts("ERROR: " + f + ': '+ detail)
 		error_msg = "ERROR--------------------------------\n" +
-			"\t" + f + ': ' + detail + "\n" +
+			"\t" + f + ': ' + detail.to_s + "\n" +
 			"-------------------------------------"
 		puts error_msg
 		error_log_file.puts(error_msg)
