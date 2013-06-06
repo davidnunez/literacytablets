@@ -1,6 +1,6 @@
 source "http://rubygems.org"
 
-ruby "1.8.7"
+ruby "1.9.3"
 
 
 gem "sqlite3"
@@ -10,3 +10,4 @@ gem 'parseconfig'
 gem 'mongo'
 gem 'json'
 gem 'bson_ext'
+gem 'mongoid'
