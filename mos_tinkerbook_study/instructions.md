@@ -72,13 +72,13 @@ Thank you so much. (*take back the tablet*).  May I ask you a couple of question
 ### To Parent
 
 - Do you have any suggestions for us to improve this tablet experience?
-- Do you have any questions you have about our research and future goals.
+- Do you have any questions about our research and future goals?
+
 ------
 
 ### Final
 
-Be sure to thank both the parent and child.
-
-**Don't forget to give child a sticker!**
-
-Plug tablet back into charger if needed.)
+- Be sure to thank both the parent and child.
+- **Don’t forget to give child a sticker!**
+- Plug tablet back into charger if needed.
+- Bring back tablet and camera to Media Lab and give to David for processing ( dnunez@media.mit.edu )
