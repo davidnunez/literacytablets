@@ -43,9 +43,9 @@ RUN_TIME = Time.now.to_i
 error_file = File.open("#{RUN_TIME}_ERROR_FILE.txt", 'a')
 error_log_file = File.open("#{RUN_TIME}_ERROR_LOG.txt", 'a')
 
-# data_coll.remove
-# Device.delete_all
-# DataFile.delete_all
+data_coll.remove
+Device.delete_all
+DataFile.delete_all
 
 class BSON::OrderedHash
   def to_h
@@ -111,8 +111,12 @@ dir_contents.each do |f|
 		puts "Mapping: #{device_id} to #{serial_id}"
 
 		
-		device = Device.first_or_create!(device_id: device_id, serial_id: serial_id)
-
+		device = Device.find_or_create_by(serial_id: serial_id)
+		if device.device_ids == nil
+			device.device_ids = []
+		end
+		device.device_ids = (device.device_ids << device_id).uniq
+		device.save
 
 		puts "Storing File Metadata"
 
