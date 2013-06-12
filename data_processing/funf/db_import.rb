@@ -44,8 +44,8 @@ error_file = File.open("#{RUN_TIME}_ERROR_FILE.txt", 'a')
 error_log_file = File.open("#{RUN_TIME}_ERROR_LOG.txt", 'a')
 
 data_coll.remove
-Device.delete_all
-DataFile.delete_all
+#Device.delete_all
+#DataFile.delete_all
 
 class BSON::OrderedHash
   def to_h
