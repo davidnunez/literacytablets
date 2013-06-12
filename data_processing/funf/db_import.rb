@@ -74,7 +74,7 @@ dir_contents = Dir["*.db"]
 progress_index = 0
 dir_contents.each do |f| 
 	begin
-		if (progress_index % 1000 == 0)
+		if (progress_index++ % 1000 == 0)
 			puts progress_index 
 		end
 		if DataFile.where(filename: f).exists?
