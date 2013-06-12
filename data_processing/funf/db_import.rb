@@ -110,8 +110,11 @@ dir_contents.each do |f|
 
 		puts "Mapping: #{device_id} to #{serial_id}"
 
-		
-		device = Device.find_or_create_by(serial_id: serial_id)
+		device = Device.where(serial_id: serial_id).first
+		if (device == nil)
+			raise "Could not find Device with serial #{serial_id}"
+		end
+
 		if device.device_ids == nil
 			device.device_ids = []
 		end
