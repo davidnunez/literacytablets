@@ -1,20 +1,22 @@
 # Instructions for Museum of Science
 ## Tinkerbook Study
 
-*(revised 2013-06-10)*
+*(revised 2013-06-18)*
 
-## Things to make sure you have
+## Equipment
 
 - Clipboard 
-- 2 Pens 
-- at least 10 consent forms printed out
-- XOOM tablet with Tinkerbook_MOS installed and fully charged
-- XOOM power charger
+	- 2 Pens 
+	- 10+ consent forms printed out
+	- picture of African Children
+	- business cards
+- 2 XOOM tablet with Tinkerbook_MOS installed and fully charged
+- 1 XOOM power charger
 - Video Camera
-- Tripod
-- Digital Recorder (can use iPhone)
+- Digital Recorder (ex. iPhone)
 - Directional Microphone
-- picture of African Children
+- laptop to use with Directional Microphone
+- Tripod (*Should already be at MoS*) 
 
 ## Goals 
 
@@ -27,35 +29,57 @@ We will create a proper, randomized session after having multiple conditions bui
 
 ## Setup
 
-The museum staff may be able to help with some of this setup:
+*The museum staff may be able to help*
 
-- plugin Xoom to power strip by table
-- arrange child-size seats to be side by side
-- arrange reading pillow on floor 
-- move whiteboard w/ study name onto table
-- set up camera and microphone to capture the general reading area
+1.	Push the table farther back against the wall.
+2.	Move the small wooden chairs so they are side-by-side by the window.
+3.	Get a blue cushion and pillow for reading on the floor. Put these where the bench usually is (slide the bench toward the animal terrariums).
+4.	Move the whiteboard with the study question onto the table.
+5.	Plug in the XOOM charger to the power strip by the table. Charge either tablet.
+6.	Turn both tablets on.
+7.	Set up the tripod to the right of the table, in front of the cupboards by the engineering station.
+8.	Put the camera on the tripod, and plug the camera into the power strip.
+9.	Point the camera at either the chairs or the cushion on the floor – you will need to reposition based on where people sit!
+10.	Set up Directional microphone on table and plug into laptop w/ recording program
+11.	Make sure you have consent forms, the script, stickers, and the inserts about the study ready.
 
-
+<!--BREAK-->
 ## Script
+**Things to say when recruiting parents:**
 
-*(exit out of any playing app on tablet.  You should be on the main tablet screen with the single tinkerbook icon in the middle.  If charged, remove tablet from power cord.  Sit on floor near table or on step to be near the adult/child pair.)*
+- We’re interested in parent-child reading behavior.
+- We’d like to see how parents and children read ebooks and interactive stories together.
+- We want to find out how reading an ebook is different from reading a traditional book.
 
-(*Turn on camera and recorders*)
+**After you have obtained consent (or when taking a non-participant through the experience):**
 
-*(to Child)* Hello. My name is _____.  What is your name?  <br/>
+- *Exit out of any playing app on tablet. You should be on the main tablet screen with the single tinkerbook icon in the middle.*
+- *If charged, remove tablet from power cord.*
+- *IF CONSENT: Turn on the camera and recorders.*
+- *Sit on the floor near the table or on the step – near the adult/child pair.*
 
-I'm very pleased to meet you! (indicating to adult) and who is this? 
+Hello. My name is _____. What is your name?
 
-I'm a researcher from MIT, and I am studying how children and parents read and play together using technology like this tablet (*show XOOM, but don't let go of it yet*).  Have you ever seen something like this before?
+I’m very pleased to meet you! (indicating to caregiver) and who is this?
 
+I’m a researcher from MIT, and I am studying how children and adults read and play together with tablets, like this one.
+- *Show XOOM, but don’t let go of it yet.*
 
-I'm going to ask you to read a story together on this tablet about a Baby Duck.  You should talk about what you see on the screen.  You can tap or swipe on pictures and words you see. I'm going to sit here quietly while you read together; try to pretend like I'm not even here.  When you are done with the story, or if you get tired or bored with the story, just let me know. Are you ready to start?
+Have you ever seen something like this before? (*ask for clarification if they only say “yes”*)
 
-(*turn the power on and place the tablet in front of the child or hand to the parent if they are sitting together on the floor*)
+I’m going to ask you to read a story together on this tablet about a baby duck. Feel free to talk about what you see on the screen. You can tap or swipe on pictures and words. When you are done reading, or if you get tired or bored, just let me know. Are you ready to start?
 
-(*Wait and watch the interaction*)
+- *Turn the power on and place the tablet in front of the child or hand to the parent if they are sitting together on the floor*
+- *Let them read the story!*
+ 
+**When they are done reading:**
 
-Thank you so much. (*take back the tablet*).  May I ask you a couple of questions before you go?
+Thank you so much. 
+
+- *Take back the tablet.*
+
+May I ask you a couple of questions before you go?
+
 
 <!--BREAK-->
 
@@ -63,22 +87,19 @@ Thank you so much. (*take back the tablet*).  May I ask you a couple of question
 
 ### To Child
 
-- How old are you?
-- What did you like the best about the Baby D story?
-- What did you like the least about the Baby D story?
-- How often do you read books at home or school?
-- Do you usually read by yourself or with other people?
+1.	What did you like best about the Baby D story?2.	What did you like least about the Baby D story?3.	How often do you read books at home or school?4.	Do you usually read by yourself or with other people?5.	How old are you? (you can ask the caregiver if the child is uncooperative)
 
-### To Parent
+### To Caregiver
 
-- Do you have any suggestions for us to improve this tablet experience?
-- Do you have any questions about our research and future goals?
+- What did you think about the story?
+- Do you have any suggestions for us to improve the reading experience?
 
+
+### Debriefing
+Thank you again for helping us out! **Would you like a sticker?**Lots of adults read with kids on tablets and ipads. We want to see how reading on a tablet is different from reading a traditional book.We also want to use all the great reading behaviors you guys exhibit to add an interactive character to the baby duck story who encourages all those behaviors. This might be useful for parents who may not use these behaviors, or for kids who are reading on their own – maybe reading an interactive story with a character who reads like you is better than just watching TV.Do you have any other questions about our research or future goals?Thanks again!
 ------
 
-### Final
-
-- Be sure to thank both the parent and child.
-- **Don’t forget to give child a sticker!**
-- Plug tablet back into charger if needed.
-- Bring back tablet and camera to Media Lab and give to David for processing ( dnunez@media.mit.edu )
+### Teardown
+- The Tripod gets stored in the volunteer room.
+- All other equipment returns to the lab.
+- Give tablet and camera to David for processing ( dnunez@media.mit.edu )
