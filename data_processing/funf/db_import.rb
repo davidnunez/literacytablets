@@ -208,7 +208,7 @@ dir_contents.each do |f|
 
 		end
 
-		File.where(filename: f).update(processed: true)
+		DataFile.where(filename: f).update(processed: true)
 		# processed_file.puts(f)
 	rescue => detail
 		#error_log_file.puts("ERROR: " + f + ': '+ detail)
