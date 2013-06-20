@@ -82,7 +82,7 @@ dir_contents.each do |f|
 			next
 		end
 
-		puts "Processing: " + f
+		# puts "Processing: " + f
 		system "~/data_processing/bin/dbdecrypt.py -p 'changeme' #{f}"
 
 
@@ -110,7 +110,7 @@ dir_contents.each do |f|
 				collected_date = collected_date.to_i * 1000
 			end
 
-		puts "Mapping: #{device_id} to #{serial_id}"
+		# puts "Mapping: #{device_id} to #{serial_id}"
 
 		device = Device.where(serial_id: serial_id).first
 		if (device == nil)
@@ -123,7 +123,7 @@ dir_contents.each do |f|
 		device.device_ids = (device.device_ids << device_id).uniq
 		device.save
 
-		puts "Storing File Metadata"
+		# puts "Storing File Metadata"
 
 
 		df = DataFile.create!(
@@ -136,7 +136,7 @@ dir_contents.each do |f|
 			device: device
 		)
 
-		puts "Storing Data"
+		# puts "Storing Data"
 	 	db = SQLite3::Database.new( f )
 	  	file_info = db.get_first_row( "select * from file_info" )
 	  	file_id, database_name, device_id, uuid, created = file_info
