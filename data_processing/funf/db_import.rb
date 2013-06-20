@@ -33,8 +33,8 @@ Dir.chdir DATA_RAW_PATH
 
 
 
-mongo_client = MongoClient.new("worldliteracydata.media.mit.edu", 27017)
-data_coll = mongo_client.db("gsu_test3")["data"]
+mongo_client = MongoClient.new(config['MONGO_HOST'], config['MONGO_PORT'])
+data_coll = mongo_client.db(config['MONGO_DB'])["data"]
 
 
 RUN_TIME = Time.now.to_i
