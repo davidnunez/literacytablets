@@ -136,8 +136,6 @@ dir_contents.each do |f|
 			device: device
 		)
 
-		next
-
 		puts "Storing Data"
 	 	db = SQLite3::Database.new( f )
 	  	file_info = db.get_first_row( "select * from file_info" )
