@@ -79,6 +79,7 @@ dir_contents.each do |f|
 			puts progress_index 
 		end
 		if DataFile.where(filename: f).exists?
+			# puts "Already seen #{f} - skipping"
 			next
 		end
 
@@ -212,13 +213,13 @@ dir_contents.each do |f|
 		# processed_file.puts(f)
 	rescue => detail
 		#error_log_file.puts("ERROR: " + f + ': '+ detail)
+		data_file = DataFile.where(filename: f).first_or_create.update(processed: false)
 		error_msg = "ERROR--------------------------------\n" +
 			"\t" + f + ': ' + detail.to_s + "\n" +
 			"-------------------------------------"
 		puts error_msg
 		error_log_file.puts(error_msg)
 		error_file.puts(f)
-
 		#error_file.puts error_msg
 	ensure
 		if (db != nil)

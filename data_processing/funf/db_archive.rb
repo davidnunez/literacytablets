@@ -29,6 +29,7 @@ config = ParseConfig.new('main.config')
 
 DATA_RAW_PATH = config['DATA_RAW_PATH']
 DATA_ARCHIVE_PATH = config['DATA_ARCHIVE_PATH']
+DATA_ERROR_PATH = config['DATA_ERROR_PATH']
 
 Dir.chdir DATA_RAW_PATH
 
@@ -44,6 +45,9 @@ def log_error(detail, f)
 		puts error_msg
 		ERROR_LOG_FILE.puts(error_msg)
 		ERROR_FILE.puts(f)
+		FileUtils.mv(f, DATA_ERROR_PATH + "/" + f)
+
+		
 end
 
 
@@ -65,21 +69,25 @@ end
 
 #---------------------------------------------------------------
 
-# puts "STARTING .DB ARCHIVE"
+puts "STARTING .DB ARCHIVE"
 
-# dir_contents = Dir["*.db"]
-# progress_index = 0
-# dir_contents.each do |f| 
-# 	begin
-# 		data_file = DataFile.where(filename: f, processed: true).first
-# 		if data_file != nil
-# 			directory = DATA_ARCHIVE_PATH + "/" + data_file.collected_date.strftime("%Y-%m")
-# 			archive_file f, directory, progress_index
-# 		end
-# 	rescue => detail
-# 		log_error detail, f
-# 	end
-# end
+dir_contents = Dir["*.db"]
+progress_index = 0
+dir_contents.each do |f| 
+	begin
+		data_file = DataFile.where(filename: f).first
+		if data_file != nil
+			if data_file.processed
+				directory = DATA_ARCHIVE_PATH + "/" + data_file.collected_date.strftime("%Y-%m")
+				archive_file f, directory, progress_index
+			else
+				raise "In Database, but not processed"
+			end
+		end
+	rescue => detail
+		log_error detail, f
+	end
+end
 
 puts "STARTING .WAV ARCHIVE"
 
