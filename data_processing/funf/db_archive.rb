@@ -33,37 +33,87 @@ DATA_ARCHIVE_PATH = config['DATA_ARCHIVE_PATH']
 Dir.chdir DATA_RAW_PATH
 
 RUN_TIME = Time.now.to_i
-error_file = File.open("#{RUN_TIME}_ERROR_ARCHIVE_FILE.txt", 'a')
-error_log_file = File.open("#{RUN_TIME}_ERROR_ARCHIVE_LOG.txt", 'a')
+ERROR_FILE = File.open("#{RUN_TIME}_ERROR_ARCHIVE_FILE.txt", 'a')
+ERROR_LOG_FILE = File.open("#{RUN_TIME}_ERROR_ARCHIVE_LOG.txt", 'a')
 
 
+def log_error(detail, f)
+		error_msg = "ERROR--------------------------------\n" +
+			"\t" + f + ': ' + detail.to_s + "\n" +
+			"-------------------------------------"
+		puts error_msg
+		ERROR_LOG_FILE.puts(error_msg)
+		ERROR_FILE.puts(f)
+end
 
 
-dir_contents = Dir["*.db"]
-progress_index = 0
-dir_contents.each do |f| 
+def archive_file(f, directory, progress_index)
 	begin
 		progress_index += 1
 		if (progress_index % 1000 == 0)
 			puts progress_index 
 		end
 
-		data_file = DataFile.where(filename: f, processed: true).first
-		if data_file != nil
-			directory = DATA_ARCHIVE_PATH + "/" + data_file.collected_date.strftime("%Y-%m")
-			Dir.mkdir(directory) unless File.exists?(directory)
-			FileUtils.mv(f, directory + "/" + f)
-		end
+		Dir.mkdir(directory) unless File.exists?(directory)
+		FileUtils.mv(f, directory + "/" + f)
 
 	rescue => detail
-		#error_log_file.puts("ERROR: " + f + ': '+ detail)
-		error_msg = "ERROR--------------------------------\n" +
-			"\t" + f + ': ' + detail.to_s + "\n" +
-			"-------------------------------------"
-		puts error_msg
-		error_log_file.puts(error_msg)
-		error_file.puts(f)
-
-		#error_file.puts error_msg
+		log_error detail, f
 	end
+
 end
+
+#---------------------------------------------------------------
+
+# puts "STARTING .DB ARCHIVE"
+
+# dir_contents = Dir["*.db"]
+# progress_index = 0
+# dir_contents.each do |f| 
+# 	begin
+# 		data_file = DataFile.where(filename: f, processed: true).first
+# 		if data_file != nil
+# 			directory = DATA_ARCHIVE_PATH + "/" + data_file.collected_date.strftime("%Y-%m")
+# 			archive_file f, directory, progress_index
+# 		end
+# 	rescue => detail
+# 		log_error detail, f
+# 	end
+# end
+
+puts "STARTING .WAV ARCHIVE"
+
+dir_contents = Dir["*.wav"]
+progress_index = 0
+dir_contents.each do |f| 
+	begin
+		
+		# Example Filename
+	  	# 1366909541-0270308243606617_1365623457278_recording.wav
+
+		filename_metadata = f.split('_')
+		if filename_metadata.length != 3 then
+			raise "Invalid filename"
+		end
+
+		collected_date = filename_metadata[1]
+
+		if collected_date.length != 13 then
+			raise "Invalid date"
+		end
+
+
+
+		directory = DATA_ARCHIVE_PATH + "/" + DataFile.time_at_ms(collected_date.to_i).strftime("%Y-%m")
+		archive_file f, directory, progress_index
+
+	rescue  => detail
+		log_error detail, f
+	end
+
+end
+
+
+
+
+
