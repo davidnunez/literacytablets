@@ -1,7 +1,7 @@
 # Instructions for Museum of Science
 ## Tinkerbook Study
 
-*(revised 2013-06-18)*
+*(revised 2013-06-21)*
 
 ## Equipment
 
@@ -17,6 +17,8 @@
 - Directional Microphone
 - laptop to use with Directional Microphone
 - Tripod (*Should already be at MoS*) 
+- Stickers (*Should already be at MoS*)
+- Digital Recorder (w usb input) (*We don't have this, yet, as of 2013-06-21*)
 
 ## Goals 
 
@@ -53,10 +55,14 @@ We will create a proper, randomized session after having multiple conditions bui
 
 **After you have obtained consent (or when taking a non-participant through the experience):**
 
+**If you didn't actually take the consent form or see your partner take the form, be sure to verify the adult has given informed consent.  Ask if they have seen the form and if they are aware and give permission for you to be recording audio and video.**
+
+- *Incrementally number each consent form so we can match to captured audio/video.*
 - *Exit out of any playing app on tablet. You should be on the main tablet screen with the single tinkerbook icon in the middle.*
 - *If charged, remove tablet from power cord.*
 - *IF CONSENT: Turn on the camera and recorders.*
 - *Sit on the floor near the table or on the step – near the adult/child pair.*
+
 
 Hello. My name is _____. What is your name?
 
@@ -87,7 +93,11 @@ May I ask you a couple of questions before you go?
 
 ### To Child
 
-1.	What did you like best about the Baby D story?2.	What did you like least about the Baby D story?3.	How often do you read books at home or school?4.	Do you usually read by yourself or with other people?5.	How old are you? (you can ask the caregiver if the child is uncooperative)
+1.	What did you like best about the Baby D story?
+2.	What did you like least about the Baby D story?
+3.	How often do you read books at home or school?
+4.	Do you usually read by yourself or with other people?
+5.	How old are you? (you can ask the caregiver if the child is uncooperative)
 
 ### To Caregiver
 
@@ -95,8 +105,16 @@ May I ask you a couple of questions before you go?
 - Do you have any suggestions for us to improve the reading experience?
 
 
-### Debriefing
-Thank you again for helping us out! **Would you like a sticker?**Lots of adults read with kids on tablets and ipads. We want to see how reading on a tablet is different from reading a traditional book.We also want to use all the great reading behaviors you guys exhibit to add an interactive character to the baby duck story who encourages all those behaviors. This might be useful for parents who may not use these behaviors, or for kids who are reading on their own – maybe reading an interactive story with a character who reads like you is better than just watching TV.Do you have any other questions about our research or future goals?Thanks again!
+### Debriefing (NOT OPTIONAL)
+Thank you again for helping us out! **Would you like a sticker?**
+
+Lots of adults read with kids on tablets and ipads. We want to see how reading on a tablet is different from reading a traditional book.
+
+We also want to use all the great reading behaviors you guys exhibit to add an interactive character to the baby duck story who encourages all those behaviors. This might be useful for parents who may not use these behaviors, or for kids who are reading on their own – maybe reading an interactive story with a character who reads like you is better than just watching TV.
+
+Do you have any other questions about our research or future goals?
+
+Thanks again!
 ------
 
 ### Teardown
