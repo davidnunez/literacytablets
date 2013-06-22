@@ -40,8 +40,8 @@ data_coll = mongo_client.db(config['MONGO_DB'])["data"]
 RUN_TIME = Time.now.to_i
 
 
-error_file = File.open("#{RUN_TIME}_ERROR_FILE.txt", 'a')
-error_log_file = File.open("#{RUN_TIME}_ERROR_LOG.txt", 'a')
+error_file = File.open("./logs/#{RUN_TIME}_ERROR_FILE.txt", 'a')
+error_log_file = File.open("./logs/#{RUN_TIME}_ERROR_LOG.txt", 'a')
 
 #data_coll.remove
 #Device.delete_all
