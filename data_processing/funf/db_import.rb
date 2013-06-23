@@ -17,7 +17,7 @@ require 'json'
 require 'mongoid'
 require './data_file.rb'
 require './device.rb'
-
+require './probe_reading.rb'
 require 'parseconfig'
 include Mongo
 Mongoid.load!("mongoid.yml", :development)
@@ -103,7 +103,6 @@ dir_contents.each do |f|
 		device_id = filename_metadata[2]
 		collected_date = filename_metadata[3]
 
-
 			if (upload_date.to_s.length == 10) 
 				upload_date = upload_date.to_i * 1000
 			end
@@ -144,19 +143,28 @@ dir_contents.each do |f|
 
 		rows = db.execute("select * from data") 
 		rows.each do |row|
-			data_id, probe, timestamp, value = row
-
-			if (timestamp.to_s.length == 10) 
-				timestamp *= 1000
-			end
-
-			merged_id = uuid + '-' + data_id.to_s
-			doc = {"data_id" => merged_id,
-					"serial_id" => serial_id,
-					"probe" => probe,
-					"timestamp" => timestamp,
-					"value" => value }
 			begin 
+
+				data_id, probe, timestamp, value = row
+				merged_id = uuid + '-' + data_id.to_s
+
+				if ProbeReading.where(data_id: merged_id).exists?
+					next
+				end
+
+
+				if (timestamp.to_s.length == 10) 
+					timestamp *= 1000
+				end
+
+
+
+
+				doc = {"data_id" => merged_id,
+						"serial_id" => serial_id,
+						"probe" => probe,
+						"timestamp" => timestamp,
+						"value" => value }
 #				puts doc["value"]
 				## ANECDOTAL FIXES
 
@@ -189,7 +197,7 @@ dir_contents.each do |f|
 				end
 
 
-				j = JSON.parse(doc['value'])
+				# j = JSON.parse(doc['value'])
 				data_coll.insert(doc)
 			
 			rescue => detail
