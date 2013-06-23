@@ -128,6 +128,7 @@ dir_contents.each do |f|
 
 		df = DataFile.create!(
 			filename: f,
+			filename_root: f[11..-1],
 			ordinal_value: ordinal_value,
 			size: File.new(f).stat.size,
 			processed: false,
