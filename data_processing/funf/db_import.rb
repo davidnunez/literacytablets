@@ -83,8 +83,10 @@ dir_contents.each do |f|
 			next
 		end
 
-		# puts "Processing: " + f
-		system "~/data_processing/bin/dbdecrypt.py -p 'changeme' #{f}"
+		if DataFile.where(filename_root: f[11..-1]).exists?
+			DataFile.create!(filename: f) # if we made it here, then filename was not seen, but root was
+			next
+		end
 
 
 
@@ -94,6 +96,7 @@ dir_contents.each do |f|
 
 		filename_metadata = f.split('_')
 		if filename_metadata.length != 5 then
+			DataFile.create!(filename: f)
 			raise "Invalid filename"
 		end
 
@@ -114,6 +117,7 @@ dir_contents.each do |f|
 
 		device = Device.where(serial_id: serial_id).first
 		if (device == nil)
+			DataFile.create!(filename: f)
 			raise "Could not find Device with serial #{serial_id}"
 		end
 
@@ -124,6 +128,7 @@ dir_contents.each do |f|
 		device.save
 
 		# puts "Storing File Metadata"
+
 
 
 		df = DataFile.create!(
@@ -137,6 +142,9 @@ dir_contents.each do |f|
 			device: device
 		)
 
+
+		# puts "Processing: " + f
+		system "~/data_processing/bin/dbdecrypt.py -p 'changeme' #{f}"
 		# puts "Storing Data"
 	 	db = SQLite3::Database.new( f )
 	  	file_info = db.get_first_row( "select * from file_info" )
@@ -166,7 +174,7 @@ dir_contents.each do |f|
 						"probe" => probe,
 						"timestamp" => timestamp,
 						"value" => value }
-#				puts doc["value"]
+				#puts doc["value"]
 				## ANECDOTAL FIXES
 
 				if doc['probe'] == "LauncherApp" 
@@ -198,7 +206,7 @@ dir_contents.each do |f|
 				end
 
 
-				# j = JSON.parse(doc['value'])
+				j = JSON.parse(doc['value'])
 				data_coll.insert(doc)
 			
 			rescue => detail
@@ -206,7 +214,7 @@ dir_contents.each do |f|
 					"\t" + doc['probe'] + ': ' + detail + "\n" +
 					"\t" + doc.inspect + "\n" +
 					"-------------------------------------"
-				puts error_msg
+				# puts error_msg
 				#error_file.puts error_msg
 			
 				error_log_file.puts(error_msg)
@@ -226,7 +234,7 @@ dir_contents.each do |f|
 		error_msg = "ERROR--------------------------------\n" +
 			"\t" + f + ': ' + detail.to_s + "\n" +
 			"-------------------------------------"
-		puts error_msg
+		# puts error_msg
 		error_log_file.puts(error_msg)
 		error_file.puts(f)
 		#error_file.puts error_msg
