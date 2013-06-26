@@ -34,7 +34,7 @@ Dir.chdir DATA_RAW_PATH
 
 
 mongo_client = MongoClient.new(config['MONGO_HOST'], config['MONGO_PORT'])
-data_coll = mongo_client.db(config['MONGO_DB'])["data"]
+data_coll = mongo_client.db(config['MONGO_DB'])["probe_readings"]
 
 
 RUN_TIME = Time.now.to_i
