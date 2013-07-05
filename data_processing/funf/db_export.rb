@@ -25,6 +25,23 @@ include Mongo
 config = ParseConfig.new('main.config')
 DATA_PROCESSED_CSV_PATH = config['DATA_PROCESSED_CSV_PATH']
 
+RUN_TIME = Time.now.to_i
+ERROR_LOG_FILE = File.open("#{DATA_PROCESSED_CSV_PATH}/logs/#{RUN_TIME}_ERROR_ARCHIVE_LOG.txt", 'a')
+
+
+def log_error(detail, f)
+		error_msg = "ERROR--------------------------------\n" +
+			"\t" + f + ': ' + detail.to_s + "\n" +
+			"-------------------------------------"
+		puts error_msg
+		ERROR_LOG_FILE.puts(error_msg)
+		FileUtils.mv(f, DATA_ERROR_PATH + "/" + f)
+
+		
+end
+
+
+
 Mongoid.load!("./mongoid.yml", :development)
 
 def make_hash_one_dimensional(input = {}, output = {}, options = {})
@@ -85,62 +102,67 @@ puts "Exporting Probe Readings... #{ProbeReading.count}"
 begin
 	progress_index = 0
 	ProbeReading.each do |probe_reading|
+		begin
+			progress_index += 1
+			if (progress_index % 1000 == 0)
+				puts progress_index 
+			end
+			# (progress_index > 20000) ? (exit) : (progress_index)
 
-		progress_index += 1
-		if (progress_index % 1000 == 0)
-			puts progress_index 
-		end
-		# (progress_index > 20000) ? (exit) : (progress_index)
-
-		# puts "====================== #{probe_reading.probe}"
-		# keys = ["serial_id", "timestamp"]
-		# value = JSON.parse(probe_reading.value)
-		# 	keys = keys.concat(value.keys).uniq
-		# puts keys.join(",")
-		# puts "---------------"
-		# keys.delete("TIMESTAMP")
-		# keys.delete("PROBE")
-		# if probe_reading.probe == "edu.mit.media.funf.probe.builtin.RunningApplicationsProbe"
-		# 	keys = keys.concat(['stack_id']).uniq
-		# end
+			# puts "====================== #{probe_reading.probe}"
+			# keys = ["serial_id", "timestamp"]
+			# value = JSON.parse(probe_reading.value)
+			# 	keys = keys.concat(value.keys).uniq
+			# puts keys.join(",")
+			# puts "---------------"
+			# keys.delete("TIMESTAMP")
+			# keys.delete("PROBE")
+			# if probe_reading.probe == "edu.mit.media.funf.probe.builtin.RunningApplicationsProbe"
+			# 	keys = keys.concat(['stack_id']).uniq
+			# end
 
 
-		# keys.map! {|key| key.downcase }
-		# puts keys.join(",")
+			# keys.map! {|key| key.downcase }
+			# puts keys.join(",")
 
 
 # --------------------
 
-		newHash = Hash.new
+			newHash = Hash.new
 
-		newHash['value'] = JSON.parse(probe_reading.value)
-		newHash['timestamp'] = probe_reading.timestamp
-		newHash['serial_id'] = probe_reading.serial_id
+			newHash['value'] = JSON.parse(probe_reading.value)
+			newHash['timestamp'] = probe_reading.timestamp
+			newHash['serial_id'] = probe_reading.serial_id
 
-		if probe_reading.probe == "edu.mit.media.funf.probe.builtin.RunningApplicationsProbe"
-			newHash['stack_id'] = probe_reading.stack_id
-		end
-		
-		newHash = make_hash_one_dimensional(newHash)
-		
-		if newHash["timestamp"].to_i == newHash["value_TIMESTAMP"].to_i*1000
-			newHash.delete("value_TIMESTAMP")
-		end
-
-		newHash.keys.each do |key|
-			if key.match(/^value_/) 
-			    newHash[key[6, key.length].downcase] = newHash.delete(key)
+			if probe_reading.probe == "edu.mit.media.funf.probe.builtin.RunningApplicationsProbe"
+				newHash['stack_id'] = probe_reading.stack_id
 			end
-		end
-		newHash.delete('probe')
+			
+			newHash = make_hash_one_dimensional(newHash)
+			
+			if newHash["timestamp"].to_i == newHash["value_TIMESTAMP"].to_i*1000
+				newHash.delete("value_TIMESTAMP")
+			end
 
-		newValues = []
-		probe_keys[probe_reading.probe].each do |key|
-			newValues.concat([newHash[key]])
-		end			
-		File.open(DATA_PROCESSED_CSV_PATH + "/" + probe_reading.probe + ".csv", "a") { |f| 
-			f.puts Device.where(serial_id: probe_reading.serial_id).first.label + newValues.join(",")
-		}
+			newHash.keys.each do |key|
+				if key.match(/^value_/) 
+				    newHash[key[6, key.length].downcase] = newHash.delete(key)
+				end
+			end
+			newHash.delete('probe')
+
+			newValues = []
+			probe_keys[probe_reading.probe].each do |key|
+				newValues.concat([newHash[key]])
+			end			
+			File.open(DATA_PROCESSED_CSV_PATH + "/" + probe_reading.probe + ".csv", "a") { |f| 
+				f.puts Device.where(serial_id: probe_reading.serial_id).first.label + newValues.join(",")
+			}
+
+
+		rescue => detail
+			log_error detail, probe_reading.id
+		end
 	end
 
 end	
