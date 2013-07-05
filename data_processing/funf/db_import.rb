@@ -17,7 +17,7 @@ require 'json'
 require 'mongoid'
 require './data_file.rb'
 require './device.rb'
-
+require './probe_reading.rb'
 require 'parseconfig'
 include Mongo
 Mongoid.load!("mongoid.yml", :development)
@@ -33,17 +33,17 @@ Dir.chdir DATA_RAW_PATH
 
 
 
-mongo_client = MongoClient.new("worldliteracydata.media.mit.edu", 27017)
-data_coll = mongo_client.db("gsu_test3")["data"]
+mongo_client = MongoClient.new(config['MONGO_HOST'], config['MONGO_PORT'])
+data_coll = mongo_client.db(config['MONGO_DB'])["probe_readings"]
 
 
 RUN_TIME = Time.now.to_i
 
 
-error_file = File.open("#{RUN_TIME}_ERROR_FILE.txt", 'a')
-error_log_file = File.open("#{RUN_TIME}_ERROR_LOG.txt", 'a')
+error_file = File.open("./logs/#{RUN_TIME}_ERROR_FILE.txt", 'a')
+error_log_file = File.open("./logs/#{RUN_TIME}_ERROR_LOG.txt", 'a')
 
-data_coll.remove
+#data_coll.remove
 #Device.delete_all
 #DataFile.delete_all
 
@@ -79,11 +79,14 @@ dir_contents.each do |f|
 			puts progress_index 
 		end
 		if DataFile.where(filename: f).exists?
+			# puts "Already seen #{f} - skipping"
 			next
 		end
 
-		puts "Processing: " + f
-		system "~/data_processing/bin/dbdecrypt.py -p 'changeme' #{f}"
+		if DataFile.where(filename_root: f[11..-1]).exists?
+			DataFile.create!(filename: f) # if we made it here, then filename was not seen, but root was
+			next
+		end
 
 
 
@@ -93,6 +96,7 @@ dir_contents.each do |f|
 
 		filename_metadata = f.split('_')
 		if filename_metadata.length != 5 then
+			DataFile.create!(filename: f)
 			raise "Invalid filename"
 		end
 
@@ -102,7 +106,6 @@ dir_contents.each do |f|
 		device_id = filename_metadata[2]
 		collected_date = filename_metadata[3]
 
-
 			if (upload_date.to_s.length == 10) 
 				upload_date = upload_date.to_i * 1000
 			end
@@ -110,10 +113,11 @@ dir_contents.each do |f|
 				collected_date = collected_date.to_i * 1000
 			end
 
-		puts "Mapping: #{device_id} to #{serial_id}"
+		# puts "Mapping: #{device_id} to #{serial_id}"
 
 		device = Device.where(serial_id: serial_id).first
 		if (device == nil)
+			DataFile.create!(filename: f)
 			raise "Could not find Device with serial #{serial_id}"
 		end
 
@@ -123,11 +127,13 @@ dir_contents.each do |f|
 		device.device_ids = (device.device_ids << device_id).uniq
 		device.save
 
-		puts "Storing File Metadata"
+		# puts "Storing File Metadata"
+
 
 
 		df = DataFile.create!(
 			filename: f,
+			filename_root: f[11..-1],
 			ordinal_value: ordinal_value,
 			size: File.new(f).stat.size,
 			processed: false,
@@ -136,29 +142,39 @@ dir_contents.each do |f|
 			device: device
 		)
 
-		next
 
-		puts "Storing Data"
+		# puts "Processing: " + f
+		system "~/data_processing/bin/dbdecrypt.py -p 'changeme' #{f}"
+		# puts "Storing Data"
 	 	db = SQLite3::Database.new( f )
 	  	file_info = db.get_first_row( "select * from file_info" )
 	  	file_id, database_name, device_id, uuid, created = file_info
 
 		rows = db.execute("select * from data") 
 		rows.each do |row|
-			data_id, probe, timestamp, value = row
-
-			if (timestamp.to_s.length == 10) 
-				timestamp *= 1000
-			end
-
-			merged_id = uuid + '-' + data_id.to_s
-			doc = {"data_id" => merged_id,
-					"serial_id" => serial_id,
-					"probe" => probe,
-					"timestamp" => timestamp,
-					"value" => value }
 			begin 
-#				puts doc["value"]
+
+				data_id, probe, timestamp, value = row
+				merged_id = uuid + '-' + data_id.to_s
+
+				if ProbeReading.where(data_id: merged_id).exists?
+					next
+				end
+
+
+				if (timestamp.to_s.length == 10) 
+					timestamp *= 1000
+				end
+
+
+
+
+				doc = {"data_id" => merged_id,
+						"serial_id" => serial_id,
+						"probe" => probe,
+						"timestamp" => timestamp,
+						"value" => value }
+				#puts doc["value"]
 				## ANECDOTAL FIXES
 
 				if doc['probe'] == "LauncherApp" 
@@ -198,7 +214,7 @@ dir_contents.each do |f|
 					"\t" + doc['probe'] + ': ' + detail + "\n" +
 					"\t" + doc.inspect + "\n" +
 					"-------------------------------------"
-				puts error_msg
+				# puts error_msg
 				#error_file.puts error_msg
 			
 				error_log_file.puts(error_msg)
@@ -210,17 +226,17 @@ dir_contents.each do |f|
 
 		end
 
-		File.where(filename: f).update(processed: true)
+		DataFile.where(filename: f).update(processed: true)
 		# processed_file.puts(f)
 	rescue => detail
 		#error_log_file.puts("ERROR: " + f + ': '+ detail)
+		data_file = DataFile.where(filename: f).first_or_create.update(processed: false)
 		error_msg = "ERROR--------------------------------\n" +
 			"\t" + f + ': ' + detail.to_s + "\n" +
 			"-------------------------------------"
-		puts error_msg
+		# puts error_msg
 		error_log_file.puts(error_msg)
 		error_file.puts(f)
-
 		#error_file.puts error_msg
 	ensure
 		if (db != nil)
