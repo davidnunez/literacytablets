@@ -35,7 +35,6 @@ def log_error(detail, f)
 			"-------------------------------------"
 		puts error_msg
 		ERROR_LOG_FILE.puts(error_msg)
-		FileUtils.mv(f, DATA_ERROR_PATH + "/" + f)
 
 		
 end
