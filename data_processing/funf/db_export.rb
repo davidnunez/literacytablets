@@ -14,12 +14,18 @@ require 'sqlite3'
 require 'parseconfig'
 require 'mongo'
 require 'json'
+require 'mongoid'
+require 'chronic'
+require 'date'
+require './data_file.rb'
+require './device'
+require './probe_reading.rb'
 include Mongo
 
-mongo_client = MongoClient.new("localhost", 27017)
-files_coll = mongo_client.db("gsu")["files"]
-devices_coll = mongo_client.db("gsu")["devices"]
-data_coll = mongo_client.db("gsu")["data"]
+config = ParseConfig.new('main.config')
+DATA_PROCESSED_CSV_PATH = config['DATA_PROCESSED_CSV_PATH']
+
+Mongoid.load!("./mongoid.yml", :development)
 
 def make_hash_one_dimensional(input = {}, output = {}, options = {})
   input.each do |key, value|
@@ -33,100 +39,108 @@ def make_hash_one_dimensional(input = {}, output = {}, options = {})
   output
 end
 
+probe_names = [
+	"FileMoverService",
+	"GpsDateFixService",
+	"LauncherApp",
+	"Matching",
+	"edu.mit.media.funf.bgcollector.MainPipeline",
+	"edu.mit.media.funf.probe.builtin.BatteryProbe",
+	"edu.mit.media.funf.probe.builtin.HardwareInfoProbe",
+	"edu.mit.media.funf.probe.builtin.RunningApplicationsProbe",
+	"edu.mit.media.funf.probe.builtin.ScreenProbe",
+	"tinkerbook"
+]
+
+probe_keys = {} 
+puts "Gathering Keys..."
+probe_names.each do |probe_name|
+	probe_reading =	ProbeReading.where(probe: probe_name).first
+	puts "====================== #{probe_reading.probe}"
+	keys = ["label", "serial_id", "timestamp"]
+	value = JSON.parse(probe_reading.value)
+	keys = keys.concat(value.keys).uniq
+	keys.delete("TIMESTAMP")
+	keys.delete("PROBE")
+	if probe_reading.probe == "edu.mit.media.funf.probe.builtin.RunningApplicationsProbe"
+		keys = keys.concat(['stack_id']).uniq
+	end
+
+
+	keys.map! {|key| key.downcase }
+	puts keys.join(",")
+	probe_keys[probe_name] = keys
+	begin
+		File.delete(DATA_PROCESSED_CSV_PATH + "/" + probe_name + ".csv")
+	rescue => detail
+	end
+	File.open(DATA_PROCESSED_CSV_PATH + "/" + probe_name + ".csv", "a") { |f| 
+		f.puts keys.join(",")
+	}
+
+end
+
+puts "Exporting Probe Readings... #{ProbeReading.count}"
 
 begin
+	progress_index = 0
+	ProbeReading.each do |probe_reading|
 
-	probes = data_coll.distinct('probe')
-
-	probes.each do |probe|
-
-		if probe == "edu.mit.media.funf.probe.builtin.RunningApplicationsProbe" 
-			#next
+		progress_index += 1
+		if (progress_index % 1000 == 0)
+			puts progress_index 
 		end
-		puts "====================== #{probe}"
+		(progress_index > 20000) ? (exit) : (progress_index)
 
-		rows = data_coll.find('probe' => probe)
+		# puts "====================== #{probe_reading.probe}"
+		# keys = ["serial_id", "timestamp"]
+		# value = JSON.parse(probe_reading.value)
+		# 	keys = keys.concat(value.keys).uniq
+		# puts keys.join(",")
+		# puts "---------------"
+		# keys.delete("TIMESTAMP")
+		# keys.delete("PROBE")
+		# if probe_reading.probe == "edu.mit.media.funf.probe.builtin.RunningApplicationsProbe"
+		# 	keys = keys.concat(['stack_id']).uniq
+		# end
 
-		puts "Collecting Keys..."
 
-		keys = ["serial_id", "timestamp"]
-		rows.each do |row|
-			if row['value'] != nil 
-				#puts row['value']
-				value = JSON.parse(row['value'])
-				# if value['RUNNING_TASKS'] != nil
-				# 	task_index = 0
-				# 	value['RUNNING_TASKS'].each do |task| 
-				# 		task = make_hash_one_dimensional(task)
-				# 		task.each do |key, v|
-				# 			keys.concat([key]) 		
-				# 		end
-				# 		task_index += 1
-				# 	end
-				# 	value.delete('RUNNING_TASKS')		
-				# end
-				keys = keys.concat(value.keys).uniq
-			end
+		# keys.map! {|key| key.downcase }
+		# puts keys.join(",")
 
+
+# --------------------
+
+		newHash = Hash.new
+
+		newHash['value'] = JSON.parse(probe_reading.value)
+		newHash['timestamp'] = probe_reading.timestamp
+		newHash['serial_id'] = probe_reading.serial_id
+
+		if probe_reading.probe == "edu.mit.media.funf.probe.builtin.RunningApplicationsProbe"
+			newHash['stack_id'] = probe_reading.stack_id
 		end
-		keys.delete("TIMESTAMP")
-		keys.delete("PROBE")
-		if probe == "edu.mit.media.funf.probe.builtin.RunningApplicationsProbe"
-
-			keys = keys.concat(['stack_id']).uniq
+		
+		newHash = make_hash_one_dimensional(newHash)
+		
+		if newHash["timestamp"].to_i == newHash["value_TIMESTAMP"].to_i*1000
+			newHash.delete("value_TIMESTAMP")
 		end
 
-
-		keys.map! {|key| key.downcase }
-		puts keys.join(",")
-		rows = data_coll.find('probe' => probe)
-
-		rows.each do |row|
-			newHash = Hash.new
-
-			newHash['value'] = JSON.parse(row['value'])
-			newHash['timestamp'] = row['timestamp']
-			newHash['serial_id'] = row['serial_id'] 
-
-			if row['probe'] == "edu.mit.media.funf.probe.builtin.RunningApplicationsProbe"
-				newHash['stack_id'] = row['stack_id']
+		newHash.keys.each do |key|
+			if key.match(/^value_/) 
+			    newHash[key[6, key.length].downcase] = newHash.delete(key)
 			end
-			# if newHash['value']['RUNNING_TASKS'] != nil
-			# 	task_index = 0
-			# 	newHash['value']['RUNNING_TASKS'].each do |task| 
-			# 		task = make_hash_one_dimensional(task)
-			# 		task.each do |key, value|
-			# 			newHash[key + "_" + task_index.to_s] = value
-			# 		end
-			# 		task_index += 1
-			# 	end
-			# 	newHash['value'].delete('RUNNING_TASKS')
-			# end
-
-			
-			newHash = make_hash_one_dimensional(newHash)
-			
-			if newHash["timestamp"].to_i == newHash["value_TIMESTAMP"].to_i*1000
-				newHash.delete("value_TIMESTAMP")
-			end
-
-			newHash.keys.each do |key|
-				if key.match(/^value_/) 
-				    newHash[key[6, key.length].downcase] = newHash.delete(key)
-				end
-			end
-			newHash.delete('probe')
-
-			newValues = []
-			keys.each do |key|
-				newValues.concat([newHash[key]])
-			end			
-			# newHash.each do |key, value| 
-			# 	puts "\t #{key} : #{value}"
-			# end
-			puts newValues.join(",")
 		end
-		#puts keys.join(",")
+		newHash.delete('probe')
+
+		newValues = []
+		probe_keys[probe_reading.probe].each do |key|
+			newValues.concat([newHash[key]])
+		end			
+		File.open(DATA_PROCESSED_CSV_PATH + "/" + probe_reading.probe + ".csv", "a") { |f| 
+			f.puts Device.where(serial_id: probe_reading.serial_id).first.label + newValues.join(",")
+		}
 	end
 
 end	
