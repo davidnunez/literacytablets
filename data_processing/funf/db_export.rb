@@ -90,7 +90,7 @@ begin
 		if (progress_index % 1000 == 0)
 			puts progress_index 
 		end
-		(progress_index > 20000) ? (exit) : (progress_index)
+		# (progress_index > 20000) ? (exit) : (progress_index)
 
 		# puts "====================== #{probe_reading.probe}"
 		# keys = ["serial_id", "timestamp"]
